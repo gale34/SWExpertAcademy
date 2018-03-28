@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1522218483 source:c:\users\game\documents\swexpertacademy\p1233\main.cpp
+	<iostream>
+	<cstdio>
+	<vector>
+	<sstream>
+	<stdlib.h>
+	<queue>
+
