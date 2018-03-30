@@ -36,10 +36,14 @@ int main()
                 cin >> barcode[j][k];
 
         vector<string> codes = extractPassword(barcode, width, height);
-        convertHexToBinPassword(codes);
+
+        for(int i = 0; i < codes.size(); i++)
+            cout << codes[i] << endl;
+
+        //convertHexToBinPassword(codes);
 
         //for(int k = 0; k < codes.size(); k++)
-            //cout << codes[k] <<endl;
+        //cout << codes[k] <<endl;
 
         //int result = verifyPassword(barcode, width, height);
 
@@ -59,42 +63,65 @@ vector<string> extractPassword(char** barcode, int width, int height)
 
     for(int i = 0; i < height; i++)
     {
-        string temp = "";
+        string target = "";
         for(int j = width-1; j >= 0; j--)
         {
             if(barcode[i][j] != '0')
             {
                 isFind = true;
-                temp.insert(temp.begin(),barcode[i][j]);
+                target.insert(target.begin(),barcode[i][j]);
             }
-            else if(isFind == true && barcode[i][j] == '0' && temp.size() >= 14)
+            else
             {
+                if(target)
+
                 if(codes.empty())
-                    codes.push_back(temp);
+                    codes.push_back(target);
                 else
                 {
                     bool isAlreadyFind = false;
                     for(int k = 0; k < codes.size(); k++)
                     {
-                        if(codes[k].find(temp) != string::npos)
+                        if(codes[k].find(target) != string::npos)
                         {
                             isAlreadyFind = true;
                             break;
                         }
                     }
                     if(!isAlreadyFind)
-                        codes.push_back(temp);
+                        codes.push_back(target);
                 }
                 isFind = false;
-                temp.clear();
+                target.clear();
+                target = "0";
+            }
+            else if(isFind == true && barcode[i][j] == '0' && target.size() >= 14)
+            {
+                if(codes.empty())
+                    codes.push_back(target);
+                else
+                {
+                    bool isAlreadyFind = false;
+                    for(int k = 0; k < codes.size(); k++)
+                    {
+                        if(codes[k].find(target) != string::npos)
+                        {
+                            isAlreadyFind = true;
+                            break;
+                        }
+                    }
+                    if(!isAlreadyFind)
+                        codes.push_back(target);
+                }
+                isFind = false;
+                target.clear();
             }
         }
 
-        if(!temp.empty())
+        if(!target.empty())
         {
-            codes.back().insert(codes.back().begin(),temp);
+            codes.back().insert(0,target);
             isFind = false;
-            temp
         }
 
     }
@@ -107,18 +134,18 @@ int verifyPassword(vector<string> codes)
     vector<int> password;
     string passwordCode = "";
 
-   /* for(int i = 0; i < PASSWORD_SIZE; i++)
-    {
-        int target = lastPt.second - PASSWORD_SIZE + i + 1;
+    /* for(int i = 0; i < PASSWORD_SIZE; i++)
+     {
+         int target = lastPt.second - PASSWORD_SIZE + i + 1;
 
-        passwordCode.append(1,barcode[lastPt.first][target]);
+         passwordCode.append(1,barcode[lastPt.first][target]);
 
-        if(passwordCode.size() == 7)
-        {
-            password.push_back(convertPassword(passwordCode));
-            passwordCode.clear();
-        }
-    }*/
+         if(passwordCode.size() == 7)
+         {
+             password.push_back(convertPassword(passwordCode));
+             passwordCode.clear();
+         }
+     }*/
 
     int odd = 0;
     int even = 0;
