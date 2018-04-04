@@ -5,7 +5,7 @@
 
 using namespace std;
 
-int shortestPath(int** warMap, int** cache, int mapSize, int x, int y);
+int shortestPath(int** warMap, int** cache, int mapSize);
 
 #define INF 999999
 #define VISITED 1
@@ -47,16 +47,7 @@ int main()
             }
         }
 
-        int answer = shortestPath(warMap, cache, mapSize, 0, 0);
-
-        for(int i = 0; i < mapSize; i++)
-        {
-            for(int j = 0; j < mapSize; j++)
-            {
-                cout << cache[i][j] << " ";
-            }
-            cout << endl;
-        }
+        int answer = shortestPath2(warMap, cache, mapSize);
 
         cout << "#" << testIdx << " " << answer << endl;
 
@@ -71,43 +62,9 @@ int main()
     return 0;
 }
 
-int shortestPath(int** warMap, int** cache, int mapSize, int x, int y)
-{
-    int& answer = cache[x][y];
-
-    if(answer != INF)
-        return answer;
-
-    if(x == mapSize - 1 && y == mapSize - 1)
-        return answer = warMap[x][y];
-
-    for(int i = 0; i < 4; i++)
-    {
-        int nextX = x + pX[i];
-        int nextY = y + pY[i];
-
-        if(nextX >= 0 && nextX < mapSize &&
-                nextY >= 0 && nextY < mapSize)
-        {
-            int target = shortestPath(warMap,cache,mapSize, nextX, nextY) + warMap[x][y];
-            answer = min(answer,target);
-        }
-
-    }
-
-    return answer;
-}
-
-int shortestPath2(int** warMap, int** cache, int mapSize, int x, int y)
+int shortestPath(int** warMap, int** cache, int mapSize)
 {
     priority_queue<pair<int, pair<int, int> > > dijkstraQueue;
-
-    int** visited = new int*[mapSize];
-    for(int i = 0; i < mapSize; i++)
-    {
-        visited[i] = new int[mapSize];
-        memset(visited[i],NOT_VISITED,sizeof(int)*mapSize);
-    }
 
     dijkstraQueue.push(make_pair(0,make_pair(0,0)));
     cache[0][0] = 0;
@@ -115,9 +72,12 @@ int shortestPath2(int** warMap, int** cache, int mapSize, int x, int y)
     while(!dijkstraQueue.empty())
     {
         pair<int, pair<int,int> > target = dijkstraQueue.top();
+        int dist = -target.first;
         pair<int, int> targetPt = target.second;
         dijkstraQueue.pop();
-        visited[targetPt.first][targetPt.second] = VISITED;
+
+        if(cache[targetPt.first][targetPt.second] < dist)
+            continue;
 
         for(int i = 0; i < 4; i++)
         {
@@ -125,14 +85,18 @@ int shortestPath2(int** warMap, int** cache, int mapSize, int x, int y)
             int nextY = targetPt.second + pY[i];
 
             if(nextX >= 0 && nextX < mapSize &&
-                    nextY >= 0 && nextY < mapSize && visited[nextX][nextY])
+                    nextY >= 0 && nextY < mapSize)
             {
-                cache[nextX][nextY] = min(cache[nextX][nextY], cache[targetPt.first][targetPt.second] + warMap[nextX][nextY]);
+                int nextDist = dist + warMap[nextX][nextY];
 
-                int target = shortestPath(warMap,cache,mapSize, nextX, nextY) + warMap[x][y];
-                answer = min(answer,target);
+                if(cache[nextX][nextY] > nextDist)
+                {
+                    cache[nextX][nextY] = nextDist;
+                    dijkstraQueue.push(make_pair(-nextDist,make_pair(nextX,nextY)));
+                }
             }
         }
     }
 
+    return cache[mapSize-1][mapSize-1];
 }
