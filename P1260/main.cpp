@@ -5,6 +5,7 @@
 
 #define VISITED 1
 #define NOT_VISITED 0
+#define INF 9999999
 
 using namespace std;
 
@@ -22,8 +23,8 @@ vector<matrix> findMatrixes(vector<vector<int> >& wholeMatrix, vector<vector<int
 void getSubMatrix(vector<vector<int> >& wholeMatrix, vector<vector<int> >& visited, int x, int y, matrix& subMatrix);
 void makeGraph(vector<matrix>& subMatrixes, vector<vector<int> >& matrixGraph);
 int minMultiplyMatrixes(vector<matrix>& subMatrixes, vector<vector<int> >& matrixGraph);
-int multiplyTry(vector<matrix>& subMatrixes, vector<int>& link);
-vector<int> dfs(vector<vector<int> >& matrixGraph, vector<int> link, vector<bool>& visited, int target);
+int multiplyTry(vector<int>& matrixSides, vector<vector<int> >& multiSums, int start, int finish);
+vector<matrix> dfs(vector<matrix>& subMatrixes, vector<vector<int> >& matrixGraph, vector<matrix> link, vector<bool>& visited, int target);
 
 int main()
 {
@@ -142,57 +143,73 @@ int minMultiplyMatrixes(vector<matrix>& subMatrixes, vector<vector<int> >& matri
 
     for(int i = 0; i < matrixSize; i++)
     {
-        vector<int> link;
+        vector<matrix> link;
         vector<bool> visited = vector<bool>(matrixSize, false);
 
-        link = dfs(matrixGraph, link, visited, i);
+        link = dfs(subMatrixes, matrixGraph, link, visited, i);
 
-        for(int i = 0; i < link.size(); i++)
+        /*for(int i = 0; i < link.size(); i++)
         {
-            int target = link[i];
-            cout << subMatrixes[target].height << " " << subMatrixes[target].width << " ";
+            cout << link[i].height << " " << link[i].width << " ";
         }
-        cout << endl;
+        cout << endl;*/
         if(link.size() == matrixSize)
-            result = min(result,multiplyTry(subMatrixes,link));
-    }
-
-    return result;
-}
-
-int multiplyTry(vector<matrix>& subMatrixes, vector<int>& link)
-{
-    int resultHeight = 0;
-    int resultWidth = 0;
-    int result = 0;
-
-    for(int i = 0; i < link.size(); i++)
-    {
-        int target = link[i];
-        if(i != 0)
         {
-            int semiResult = resultHeight * resultWidth * subMatrixes[target].width;
-            result += semiResult;
+            vector<int> matrixSides(matrixSize+1);
+            for(int j = 0; j <= matrixSize; j++)
+            {
+                if(j == 0)
+                    matrixSides[j] = link[j].height;
+                else
+                    matrixSides[j] = link[j-1].width;
+            }
+            vector<vector<int> > multiSums(matrixSize+1);
+
+            for(int j = 0; j <= matrixSize; j++)
+            {
+                vector<int> temp(matrixSize+1, INF);
+                multiSums[j] = temp;
+            }
+
+            result = min(result,multiplyTry(matrixSides,multiSums,1,matrixSize));
         }
-        resultHeight = subMatrixes[target].height;
-        resultWidth = subMatrixes[target].width;
+
     }
 
     return result;
 }
 
-vector<int> dfs(vector<vector<int> >& matrixGraph, vector<int> link, vector<bool>& visited, int target)
+int multiplyTry(vector<int>& matrixSides, vector<vector<int> >& multiSums, int start, int finish)
 {
-    link.push_back(target);
+    int& result = multiSums[start][finish];
+    if(start == finish)
+        return result = 0;
+
+    if(result != INF)
+        return result;
+
+    for(int i = start; i < finish; i++)
+    {
+        result = min(result, multiplyTry(matrixSides, multiSums, start,i)
+                     + multiplyTry(matrixSides, multiSums, i+1,finish)
+                     + matrixSides[start-1]*matrixSides[i]*matrixSides[finish]);
+    }
+
+    return result;
+}
+
+vector<matrix> dfs(vector<matrix>& subMatrixes, vector<vector<int> >& matrixGraph, vector<matrix> link, vector<bool>& visited, int target)
+{
+    link.push_back(subMatrixes[target]);
     visited[target] = true;
-    vector<int> result(link);
+    vector<matrix> result(link);
 
     for(int i = 0; i < matrixGraph[target].size(); i++)
     {
-        vector<int> tempLink;
+        vector<matrix> tempLink;
         int subTarget= matrixGraph[target][i];
         if(!visited[subTarget])
-            tempLink = dfs(matrixGraph, link, visited, subTarget);
+            tempLink = dfs(subMatrixes, matrixGraph, link, visited, subTarget);
 
         if(result.size() < tempLink.size())
             result = tempLink;
