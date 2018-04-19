@@ -1,12 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <queue>
 #include <cstdio>
 
 #define INF 9999999
 
 using namespace std;
 
-void floyd(vector<vector<int> >& closeness);
+int getCC(vector<vector<int> >& closeness, int target);
 
 int main()
 {
@@ -23,34 +24,18 @@ int main()
         vector<vector<int> > closeness(numPeople);
         for(int i = 0; i < numPeople; i++)
         {
-            vector<int> temp(numPeople, 0);
             for(int j = 0; j < numPeople; j++)
             {
-                cin >> temp[j];
-                if(temp[j] == 0 && i != j)
-                    temp[j] = INF;
+                int temp;
+                cin >> temp;
+                if(temp == 1)
+                    closeness[i].push_back(j);
             }
-            closeness[i] = temp;
         }
-
-        floyd(closeness);
-
-        /*for(int i = 0; i < numPeople; i++)
-        {
-            for(int j = 0; j < numPeople; j++)
-                cout << closeness[i][j] << " ";
-            cout << endl;
-        }*/
 
         int result = INF;
         for(int i = 0; i < numPeople; i++)
-        {
-            int tempSum = 0;
-            for(int j = 0; j < numPeople; j++)
-                tempSum += closeness[i][j];
-
-            result = min(result, tempSum);
-        }
+            result = min(result,getCC(closeness,i));
 
         cout << "#" << t+1 << " " << result << endl;
     }
@@ -58,7 +43,39 @@ int main()
     return 0;
 }
 
-void floyd(vector<vector<int> >& closeness)
+int getCC(vector<vector<int> >& closeness, int target)
+{
+    int numPeople = closeness.size();
+    queue<int> ccQ;
+    vector<int> added(numPeople,0);
+
+    ccQ.push(target);
+
+    while(!ccQ.empty())
+    {
+        int subTarget = ccQ.front();
+        ccQ.pop();
+
+        for(int i = 0; i < closeness[subTarget].size(); i++)
+        {
+            int nextTarget = closeness[subTarget][i];
+
+            if(nextTarget == target || added[nextTarget] != 0)
+                continue;
+
+            ccQ.push(nextTarget);
+            added[nextTarget] = added[subTarget]+1;
+        }
+    }
+
+    int result = 0;
+    for(int i = 0; i < numPeople; i++)
+        result += added[i];
+
+    return result;
+}
+
+/*void floyd(vector<vector<int> >& closeness)
 {
     int numPeople = closeness.size();
 
@@ -72,4 +89,4 @@ void floyd(vector<vector<int> >& closeness)
                 closeness[i][j] = min(closeness[i][j], closeness[i][k] + closeness[k][j]);
         }
     }
-}
+}*/
