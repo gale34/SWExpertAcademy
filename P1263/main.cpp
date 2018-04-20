@@ -34,8 +34,8 @@ int main()
         }
 
         int result = INF;
-        for(int i = 0; i < numPeople; i++)
-            result = min(result,getCC(closeness,i));
+        //for(int i = 0; i < numPeople; i++)
+        //    result = min(result,getCC(closeness,i));
 
         cout << "#" << t+1 << " " << result << endl;
     }
