@@ -31,26 +31,26 @@ public class P1859 {
 		return answer;
 	}
 
-	public static void main(String args[]) {
-
-		Scanner input = new Scanner(System.in);
-
-		int testSize = input.nextInt();
-
-		for (int t = 0; t < testSize; t++) {
-			int n = input.nextInt();
-
-			int prices[] = new int[n];
-			for (int i = 0; i < n; i++) {
-				prices[i] = input.nextInt();
-			}
-
-			long answer = solution(prices);
-
-			System.out.println("#" + (t + 1) + " " + answer);
-		}
-		
-		input.close();
-
-	}
+	// public static void main(String args[]) {
+	//
+	// Scanner input = new Scanner(System.in);
+	//
+	// int testSize = input.nextInt();
+	//
+	// for (int t = 0; t < testSize; t++) {
+	// int n = input.nextInt();
+	//
+	// int prices[] = new int[n];
+	// for (int i = 0; i < n; i++) {
+	// prices[i] = input.nextInt();
+	// }
+	//
+	// long answer = solution(prices);
+	//
+	// System.out.println("#" + (t + 1) + " " + answer);
+	// }
+	//
+	// input.close();
+	//
+	// }
 }
