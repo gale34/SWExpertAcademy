@@ -21,10 +21,12 @@ public:
     }
 };
 
-int cnt;
-
-bool makeSudoku(Cell** sudoku, int x, int y);
+bool makeSudoku(Cell** sudoku, int x, int y,bool** visited);
+bool makeSudoku4Way(Cell** sudoku, int x, int y, bool** visited);
 vector<int> makeCandidate(Cell** sudoku, int x, int y);
+
+int pX[4] = {0,1,0,-1};
+int pY[4] = {1,0,-1,0};
 
 int main()
 {
@@ -33,11 +35,19 @@ int main()
     int testSize;
     cin >> testSize;
 
-    for(int t = 0; t < 1; t++)
+    for(int t = 0; t < testSize; t++)
     {
         Cell** sudoku = new Cell*[6];
         for(int i = 0; i < 6; i++)
             sudoku[i] = new Cell[6];
+
+        bool** visited = new bool*[6];
+        for(int i = 0; i < 6; i++)
+            visited[i] = new bool[6];
+
+        for(int i = 0; i < 6; i++)
+            for(int j = 0; j < 6; j++)
+                visited[i][j] = false;
 
         for(int i = 0; i < 6; i++)
         {
@@ -74,11 +84,9 @@ int main()
             }
         }
 
-        cnt = 0;
+        makeSudoku(sudoku, 0, 0, visited);
 
-        makeSudoku(sudoku, 0, 0);
-
-        cout <<endl;
+        cout << "#" << t+1 << endl;
         for(int i = 0; i < 6; i++)
         {
             for(int j = 0; j < 6; j++)
@@ -90,42 +98,50 @@ int main()
             }
             cout << endl;
         }
+
+
+        for(int i = 0; i < 6; i++)
+        {
+            delete sudoku[i];
+            delete visited[i];
+        }
+        delete sudoku;
+        delete visited;
     }
 
     return 0;
 }
 
-bool makeSudoku(Cell** sudoku, int x, int y)
+bool makeSudoku4Way(Cell** sudoku, int x, int y, bool** visited)
 {
-    if(x == 6 || y == 6)
+    for(int i = 0; i < 4; i++)
+    {
+        int targetX = x + pX[i];
+        int targetY = y + pY[i];
+
+        if(!makeSudoku(sudoku,targetX,targetY,visited))
+            return visited[x][y] = false;
+    }
+    return true;
+}
+
+bool makeSudoku(Cell** sudoku, int x, int y, bool** visited)
+{
+    if(x <0 || x == 6 || y < 0 || y == 6)
         return true;
+
+    if(visited[x][y])
+        return true;
+
+    visited[x][y] = true;
 
     vector<int> candidates = makeCandidate(sudoku, x, y);
 
-    cout << "Test  "  << x << " " << y << endl;
-    cout << "CANDIDATE : ";
-    for(int i = 0; i < candidates.size(); i++)
-        cout << candidates[i] << " ";
-    cout << endl;
-    for(int i = 0; i < 6; i++)
-    {
-        for(int j = 0; j < 6; j++)
-        {
-            if(sudoku[i][j].isFraction)
-                cout << sudoku[i][j].numerator << "/" << sudoku[i][j].denominator << " ";
-            else
-                cout << sudoku[i][j].number << " ";
-        }
-        cout << endl;
-    }
 
     if(sudoku[x][y].isFraction)
     {
         if(sudoku[x][y].numerator != 0 && sudoku[x][y].denominator != 0)
-        {
-            if(makeSudoku(sudoku,x,y+1))
-                return makeSudoku(sudoku,x+1,y);
-        }
+            return makeSudoku4Way(sudoku, x, y, visited);
         else if(sudoku[x][y].numerator != 0 && sudoku[x][y].denominator == 0)
         {
             for(int i = 0; i < candidates.size(); i++)
@@ -134,10 +150,8 @@ bool makeSudoku(Cell** sudoku, int x, int y)
                     continue;
 
                 sudoku[x][y].denominator = candidates[i];
-                if(makeSudoku(sudoku,x,y+1))
-                    if(makeSudoku(sudoku,x+1,y))
-                        return true;
-
+                if(makeSudoku4Way(sudoku, x, y, visited))
+                    return true;
                 sudoku[x][y].denominator = 0;
             }
         }
@@ -147,11 +161,9 @@ bool makeSudoku(Cell** sudoku, int x, int y)
             {
                 if(candidates[i] >= sudoku[x][y].denominator)
                     continue;
-
                 sudoku[x][y].numerator = candidates[i];
-                if(makeSudoku(sudoku,x,y+1))
-                    if(makeSudoku(sudoku,x+1,y))
-                        return true;
+                if(makeSudoku4Way(sudoku, x, y, visited))
+                    return true;
                 sudoku[x][y].numerator = 0;
             }
         }
@@ -161,11 +173,11 @@ bool makeSudoku(Cell** sudoku, int x, int y)
             {
                 for(int j = i+1; j < candidates.size(); j++)
                 {
+
                     sudoku[x][y].numerator = candidates[i];
                     sudoku[x][y].denominator = candidates[j];
-                    if(makeSudoku(sudoku,x,y+1))
-                        if(makeSudoku(sudoku,x+1,y))
-                            return true;
+                    if(makeSudoku4Way(sudoku, x, y, visited))
+                        return true;
                     sudoku[x][y].numerator = 0;
                     sudoku[x][y].denominator = 0;
                 }
@@ -176,24 +188,22 @@ bool makeSudoku(Cell** sudoku, int x, int y)
     {
         if(sudoku[x][y].number != 0)
         {
-            if(makeSudoku(sudoku,x,y+1))
-                return makeSudoku(sudoku,x+1,y);
+            return makeSudoku4Way(sudoku, x, y, visited);
         }
         else
         {
-
             for(int i = 0; i < candidates.size(); i++)
             {
+
                 sudoku[x][y].number = candidates[i];
-                if(makeSudoku(sudoku,x,y+1))
-                    if(makeSudoku(sudoku,x+1,y))
-                        return true;
+                if(makeSudoku4Way(sudoku, x, y, visited))
+                    return true;
                 sudoku[x][y].number = 0;
             }
         }
     }
 
-    return false;
+    return visited[x][y] = false;
 }
 
 vector<int> makeCandidate(Cell** sudoku, int x, int y)
